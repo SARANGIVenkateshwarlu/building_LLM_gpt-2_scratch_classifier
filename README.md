@@ -127,17 +127,31 @@ Use **last token representation** for prediction.
 <table>
   <tr>
      <td align="center">
-     </td> 
-     <strong>Pre-Training Loss Curve</strong><br>
-     <img src="asset/Loss_Epochs_pre-traingLLM_output.png" width="400"/>
+         <strong>Pre-Training Loss Curve</strong><br>
+         <img src="asset/Loss_Epochs_pre-traingLLM_output.png" width="400"/>
      </td>
      <td align="center">
-     <strong>Fine-Tuning Loss Curve</strong><br>
-     <img src="asset/Loss_Epochs_Fine%20tune%20LLM_output_2.png" width="400"/>
+        <strong>Fine-Tuning Loss Curve</strong><br>
+        <img src="asset/Loss_Epochs_Fine%20tune%20LLM_output_2.png" width="400"/>
      </td>
   </tr>
 </table>
 
+
+## Loss Curves Comparison
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Fine-Tuning Loss Curve</strong><br>
+      <img src="asset/Loss_Epochs_Fine%20tune%20LLM_output_2.png" width="400"/>
+    </td>
+    <td align="center">
+      <strong>Pre-Training Loss Curve</strong><br>
+      <img src="asset/Loss_Epochs_pre-traingLLM_output.png" width="400"/>
+    </td>
+  </tr>
+</table>
 ---
 
 ## 7. Generalization to Other Domains
