@@ -138,20 +138,6 @@ Use **last token representation** for prediction.
 </table>
 
 
-## Loss Curves Comparison
-
-<table>
-  <tr>
-    <td align="center">
-      <strong>Fine-Tuning Loss Curve</strong><br>
-      <img src="asset/Loss_Epochs_Fine%20tune%20LLM_output_2.png" width="400"/>
-    </td>
-    <td align="center">
-      <strong>Pre-Training Loss Curve</strong><br>
-      <img src="asset/Loss_Epochs_pre-traingLLM_output.png" width="400"/>
-    </td>
-  </tr>
-</table>
 ---
 
 ## 7. Generalization to Other Domains
@@ -191,32 +177,10 @@ The same pipeline applies to any text classification task.
 
 [![Streamlit Classifier App UI](asset/GPT-2_classifier_App.png)](asset/GPT-2_classifier_App.png) 
 
-
-asset\Accuracy_1.png
-
-asset\GPT-2_classification head.jpg
-asset\GPT-2_classifier_App.png
-asset\Loss_Epochs_Fine tune LLM_output_2.png
-asset\Loss_Epochs_pre-traingLLM_output.png
-
-
-
-
-
 ---
 
 
 
 
 
----
 
-## Fine-Tuning Loss Curve
-
-![Fine-Tune Loss vs Epochs](asset/Loss_Epochs_Fine%20tune%20LLM_output_2.png)
-
----
-
-## Pre-Training Loss Curve
-
-![Pre-Training Loss vs Epochs](asset/Loss_Epochs_pre-traingLLM_output.png)
