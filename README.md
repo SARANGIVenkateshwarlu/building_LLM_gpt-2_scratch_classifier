@@ -152,8 +152,21 @@ The same pipeline applies to any text classification task.
 
 ---
 
+asset\LLM_Classification_optimization1.png
 
 
 
+## LLM Classification Optimization Results  
+
+| Item | Value |
+|------|--------|
+| **Best Validation Accuracy** | 0.9799 |
+| **Dropout Rate (`drop_rate`)** | 0.1603 |
+| **Learning Rate (`learning_rate`)** | 0.00013008 |
+| **Weight Decay (`weight_decay`)** | 0.002989 |
+| **Epochs** | 19 |
+| **Train Last N Transformer Blocks** | 2 |
+| **Train Final LayerNorm** | False |
+| **Train Embeddings** | False |
 
 
