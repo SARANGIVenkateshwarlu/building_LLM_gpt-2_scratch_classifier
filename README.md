@@ -22,46 +22,19 @@ A step‑by‑step project series focused on understanding how Large Language Mo
 
 ---
 
-## 2. Data Preprocessing — SMS Spam Collection
+## 2. Data Preprocessing — SMS Spam Collection  
 
-**Dataset:** 5,572 messages  
-- Ham: 4,825 (86%)  
-- Spam: 747 (13%)  
+Dataset: 5,572 messages (Ham: 4,825 — 86%, Spam: 747 — 13%). Structure: `label` (ham/spam) and `message` (raw SMS text).  
 
-**Structure:**  
-- `label` → ham / spam  
-- `message` → raw SMS text  
-
-### 2.1 Class Balancing
-
-Original ratio ≈ 6:1 (ham:spam).  
-Random undersampling applied → **747 ham + 747 spam (balanced dataset)**.
-
-### 2.2 Label Encoding & Split
-
-- ham → 0  
-- spam → 1  
-
-Split (fixed random seed):  
-- Train 70%  
-- Validation 10%  
-- Test 20%  
+The original dataset was imbalanced (~6:1). Random undersampling was applied to create a balanced set of **747 ham + 747 spam** messages. Labels were encoded as **ham → 0** and **spam → 1**. Data was split (fixed random seed) into **Train 70%**, **Validation 10%**, and **Test 20%**.  
 
 ---
 
-## 3. Handling Variable-Length Text
+## 3. Handling Variable-Length Text  
 
-### 3.1 Problem
+Emails contain different token lengths (e.g., 15, 45, 120 tokens), but models require fixed input shape `[batch_size, max_length]`.  
 
-Emails have different token lengths (15, 45, 120 tokens), but models require fixed shape: [batch_size, max_length]
-
-
-### Options
-
-- **Truncate** → loses information  
-- **Pad** → preserves full content ✅  
-
-**Solution:** Pad using GPT‑2 `<|endoftext|>` (ID = 50256).
+Truncation removes information, while padding preserves full content ✅. Therefore, sequences are padded using GPT‑2’s `<|endoftext|>` token (ID = 50256) to ensure uniform batch dimensions.
 
 ---
 
