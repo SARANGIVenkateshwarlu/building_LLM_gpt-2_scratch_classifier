@@ -172,3 +172,6 @@ By completing the series, the learner gains hands-on experience in building:
 
 This makes the project a strong portfolio piece for interviews, research discussions, and practical ML/LLM engineering work.
 
+
+ Andrej Karpathy: Let's reproduce GPT-2 (124M)
+https://www.youtube.com/watch?v=l8pRSuU81PU
