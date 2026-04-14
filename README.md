@@ -1,177 +1,153 @@
-# **Project: Build Large Language Models From Scratch**
+# Project: Build Small Language Models (GPT‑2 124M) From Scratch
+---
 
-A step-by-step project series focused on understanding how large language models are built from the ground up, from data preprocessing and attention to pre-training, fine-tuning, and evaluation. The goal of the project is to train the reader to think like a fundamental machine learning engineer rather than only using ready-made LLM APIs.
+A step‑by‑step project series focused on understanding how Large Language Models are built from the ground up — from preprocessing and attention mechanisms to pre‑training, fine‑tuning, and evaluation.
 
-## Project Overview
+**Objective:** Train readers to think like fundamental machine learning engineers, not just API users.
 
-This project walks through the complete lifecycle of building an LLM from scratch. It begins with the foundations of text processing and tokenization, moves into the internal mechanics of attention and Transformer blocks, and then progresses to training, fine-tuning, and evaluation. The codebase is designed in a modular way so each building block can be understood, modified, and extended independently.
+---
 
-## Motivation
+## 1. End‑to‑End Pipeline
 
-The main purpose of the project is educational: to make the inner workings of LLMs transparent and accessible. Instead of treating an LLM as a black box, the project emphasizes the “nuts and bolts” of model construction, helping learners develop a deeper intuition for how language models learn, represent context, and generate predictions.
+1. Download SMS Spam dataset  
+2. Balance classes (747 spam, 747 ham)  
+3. Split into train / validation / test  
+4. Create Datasets & DataLoaders (tokenization + padding)  
+5. Initialize GPT‑2 with pretrained OpenAI weights  
+6. Replace LM head (768→50257) with classification head (768→2)  
+7. Implement accuracy & cross‑entropy loss  
+8. Fine‑tune using AdamW; monitor train/val metrics  
+9. Evaluate on full datasets  
+10. Run inference on new messages; save checkpoint  
 
-## What This Project Covers
+---
 
-The lecture series and codebase cover three major stages:
+## 2. Data Preprocessing — SMS Spam Collection
 
-1. Foundation stage.
-2. Pre-training stage.
-3. Fine-tuning and evaluation stage.
+**Dataset:** 5,572 messages  
+- Ham: 4,825 (86%)  
+- Spam: 747 (13%)  
 
-Each stage builds on the previous one, similar to constructing a house from the foundation upward.
+**Structure:**  
+- `label` → ham / spam  
+- `message` → raw SMS text  
 
-## Stage 1: Foundation
+### 2.1 Class Balancing
 
-This stage focuses on the core components required before training begins.
+Original ratio ≈ 6:1 (ham:spam).  
+Random undersampling applied → **747 ham + 747 spam (balanced dataset)**.
 
-### Data Preprocessing
+### 2.2 Label Encoding & Split
 
-The first step is converting raw text into a form that a neural network can use. Text is broken into tokens, tokens are mapped to token IDs, and those IDs are converted into dense vector representations called embeddings. Positional embeddings are added so the model can preserve token order, producing the final input embeddings used by the model.
+- ham → 0  
+- spam → 1  
 
-### Intuition
+Split (fixed random seed):  
+- Train 70%  
+- Validation 10%  
+- Test 20%  
 
-Token embeddings capture meaning, while positional embeddings capture order. Both are necessary because language depends not only on what words appear, but also on where they appear in the sequence.
+---
 
-### Attention Mechanism
+## 3. Handling Variable-Length Text
 
-Attention is the central idea that makes modern LLMs powerful. Instead of processing each token in isolation, the model computes relationships between tokens using queries, keys, and values. Attention scores are scaled, masked causally, normalized with softmax, and used to produce context vectors.
+### 3.1 Problem
 
-### Intuition
+Emails have different token lengths (15, 45, 120 tokens), but models require fixed shape: [batch_size, max_length]
 
-Attention tells the model which other tokens matter most when interpreting a given token. This is what allows the model to build contextual understanding rather than static word meanings.
 
-### Multi-Head Attention
+### Options
 
-Multiple attention heads are used in parallel so the model can learn different kinds of relationships at the same time. One head may focus on syntax, another on semantic relations, and another on long-range dependencies.
+- **Truncate** → loses information  
+- **Pad** → preserves full content ✅  
 
-### Transformer Architecture
+**Solution:** Pad using GPT‑2 `<|endoftext|>` (ID = 50256).
 
-The Transformer block combines:
+---
 
-- Layer normalization.
-- Multi-head attention.
-- Residual connections.
-- Feedforward neural networks.
+### 3.2 Workflow: Text → Tokens → Batch
 
-These blocks are stacked many times to form the full LLM architecture.
+| Step | Operation | Example |
+|------|------------|----------|
+| 1 | Text | `"Ok lar... FREE entry..."` |
+| 2 | Tokenize | `[5037, 878, ..., 3187]` |
+| 3 | Pad | Append `50256` until `max_length` |
+| 4 | Batch | `[batch_size, max_length]` |
+| 5 | Labels | `[0, 1, 0, 1, ...]` |
 
-### Intuition
+---
 
-Attention helps tokens communicate, while the feedforward layers help the model transform and refine the information it has gathered.
+## 4. Supervised Fine‑Tuning with Classification Head
 
-## Stage 2: Pre-Training
+**Architecture Modification:**  
+Replace GPT‑2 LM head with **classification head (768→2)**.  
+Use **last token representation** for prediction.
 
-This stage explains how the model learns language patterns from large amounts of data.
+---
 
-### Next-Token Prediction
+## 5. From Model Output to Prediction
 
-The model is trained to predict the next token in a sequence. Given an input sentence, the LLM outputs logits over the vocabulary, which are converted into probabilities for the next token.
+### 5.1 Logits
 
-### Loss Function
+- Output shape: `[batch_size, seq_len, 2]`  
+- Select last token → `[batch_size, 2]`  
+- Example: `[-3.5983, 3.9902]` → `[ham, spam]`
 
-The training objective is typically cross-entropy loss, which measures the difference between the predicted next token and the actual next token.
+### 5.2 Prediction
 
-### Backpropagation
+- Apply `argmax` on logits  
+  - 0 → ham  
+  - 1 → spam  
+- Softmax optional (argmax unchanged)
 
-After computing the loss, gradients are calculated for all trainable parameters, including:
+---
 
-- Token embeddings.
-- Positional embeddings.
-- Query, key, and value matrices.
-- LayerNorm parameters.
-- Feedforward network weights.
-- Final output layers.
+## 6. Model Performance Summary
 
+| Stage | Metric | Train | Val | Test | Notes |
+|-------|--------|--------|------|------|-------|
+| Baseline | Accuracy | 46% | 45% | 48% | Worse than chance |
+| Initial | Loss | High | High | High | Before training |
+| After Training | Loss | 0.083 | 0.074 | — | Minimal overfitting |
+| During Training* | Accuracy | 100% | 97.5% | — | `eval_iter=5` |
+| Final Evaluation | Accuracy | 97% | 97% | 95% | ~2% gap |
 
-### Optimization
+**Interpretation:** Slight but acceptable overfitting.
 
-The model updates parameters using gradient-based optimization methods such as Adam or AdamW. This iterative process is repeated over many batches and epochs.
+---
 
-### Intuition
+## 7. Generalization to Other Domains
 
-Pre-training teaches the model general language structure by repeatedly correcting its next-token predictions.
+The same pipeline applies to any text classification task.
 
-### Practical Note
+### 7.1 General Applications
 
-The lecture series demonstrates this process on a small dataset and a smaller setup, while real-world LLM pre-training requires massive compute and large-scale datasets.
+- Product reviews (positive/negative)  
+- Medical diagnosis (disease/no disease)  
+- Support tickets (priority levels)  
 
-## Stage 3: Fine-Tuning
+### 7.2 Finance Applications
 
-After pre-training, the model is adapted for specific downstream tasks.
+- Financial news sentiment (bullish/bearish/neutral)  
+- Earnings call analysis (positive/negative outlook)  
+- Loan approval prediction (approve/reject)  
+- Credit risk classification (low/medium/high)  
+- Fraud detection (fraud/not fraud)  
+- Insurance claim screening (legitimate/suspicious)  
+- ESG compliance classification  
 
-### Classification Fine-Tuning
+✅ Keep preprocessing & architecture  
+✅ Only modify final classification head (e.g., 3 or 5 classes)
 
-One project trains an LLM for email classification, such as distinguishing spam from non-spam messages.
+---
 
-### Intuition
+## 8. Deployment
 
-The model already understands language broadly from pre-training, and fine-tuning teaches it how to solve a specific task.
+- Lightweight GPT‑2 (124M) suitable for edge/mobile optimization  
+- Streamlit UI demo for inference visualization  
+- Model checkpoint export for production use  
 
-### Instruction Fine-Tuning
+---
 
-Another project trains the model to follow instructions, such as converting active voice to passive voice or responding to user prompts in a structured way.
-
-### Intuition
-
-Instruction tuning makes the model more useful as a general assistant by teaching it how to respond to commands.
-
-## Evaluation
-
-The project also covers how to measure model quality.
-
-### Benchmark Evaluation
-
-One approach uses benchmark-style testing such as MMLU, which evaluates performance across many different tasks.
-
-### Human Evaluation
-
-Another approach is human judgment, where people compare outputs and rate model quality.
-
-### LLM-as-Judge
-
-The project also demonstrates using a stronger LLM to evaluate another model’s response by comparing the predicted output against the target output and assigning a score.
-
-### Intuition
-
-Evaluation is not just about correctness. For language models, it also includes usefulness, coherence, and instruction-following quality.
-
-## Key Learnings
-
-This project teaches how to:
-
-- Build a tokenization and embedding pipeline.
-- Implement attention from scratch.
-- Assemble Transformer blocks into a full architecture.
-- Train a next-token prediction model.
-- Fine-tune the model for classification and instruction-following.
-- Evaluate model outputs using benchmarks, humans, and LLM judges.
-
-
-## Why This Project Matters
-
-The project helps learners move beyond using LLMs as black-box services. It develops a working understanding of how language models are engineered, trained, and adapted, which is valuable for research, model development, and advanced ML engineering.
-
-## Suggested Extensions
-
-The codebase is intentionally structured so it can be extended for research and experimentation. Possible next steps include:
-
-- Changing the number of Transformer blocks.
-- Trying different learning rates and optimizers.
-- Comparing evaluation methods.
-- Exploring smaller or more efficient model variants.
-- Studying the effect of architectural changes on performance.
-
-
-## Outcome
-
-By completing the series, the learner gains hands-on experience in building:
-
-- A next-token prediction LLM from scratch.
-- A spam classification LLM.
-- An instruction-tuned assistant model.
-
-This makes the project a strong portfolio piece for interviews, research discussions, and practical ML/LLM engineering work.
-
-
- Andrej Karpathy: Let's reproduce GPT-2 (124M)
-https://www.youtube.com/watch?v=l8pRSuU81PU
+### Streamlit UI_Demo
+   asset\GPT-2_classifier.png
